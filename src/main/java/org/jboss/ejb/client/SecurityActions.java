@@ -73,6 +73,19 @@ final class SecurityActions {
         }
     }
 
+    static void setContextClassLoader(final ClassLoader classLoader) {
+        if (System.getSecurityManager() == null) {
+            Thread.currentThread().setContextClassLoader(classLoader);
+        } else {
+            AccessController.doPrivileged(new PrivilegedAction<Object>() {
+                public Object run() {
+                    Thread.currentThread().setContextClassLoader(classLoader);
+                    return null;
+                }
+            });
+        }
+    }
+
     static <S> ServiceLoader<S> loadService(final Class<S> type, final ClassLoader classLoader) {
         final SecurityManager sm = System.getSecurityManager();
         if (sm == null) {

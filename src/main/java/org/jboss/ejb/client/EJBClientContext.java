@@ -69,12 +69,18 @@ public final class EJBClientContext extends Attachable {
     private static volatile ContextSelector<EJBClientContext> SELECTOR;
 
     static {
-        final Properties ejbClientProperties = EJBClientPropertiesLoader.loadEJBClientProperties();
-        if (ejbClientProperties == null) {
-            SELECTOR = new ConfigBasedEJBClientContextSelector(null);
-        } else {
-            final EJBClientConfiguration clientConfiguration = new PropertiesBasedEJBClientConfiguration(ejbClientProperties);
-            SELECTOR = new ConfigBasedEJBClientContextSelector(clientConfiguration);
+        ClassLoader oldTccl = SecurityActions.getContextClassLoader();
+        try {
+            SecurityActions.setContextClassLoader(EJBClientContext.class.getClassLoader());
+            final Properties ejbClientProperties = EJBClientPropertiesLoader.loadEJBClientProperties();
+            if (ejbClientProperties == null) {
+                SELECTOR = new ConfigBasedEJBClientContextSelector(null);
+            } else {
+                final EJBClientConfiguration clientConfiguration = new PropertiesBasedEJBClientConfiguration(ejbClientProperties);
+                SELECTOR = new ConfigBasedEJBClientContextSelector(clientConfiguration);
+            }
+        } finally {
+            SecurityActions.setContextClassLoader(oldTccl);
         }
     }
 
